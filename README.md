@@ -1,4 +1,4 @@
-# 👁️ Agenatic Assistant Doctor: AI-Powered Eye Disease Chatbot
+#  Agenatic Assistant Doctor: AI-Powered Eye Disease Chatbot
 
 A bilingual (Arabic / English) chatbot that answers questions about eye diseases using **Retrieval-Augmented Generation (RAG)**. Content from trusted medical websites is embedded into a vector database, and the most relevant passages are passed to a Groq-hosted LLM to produce a focused answer.
 
@@ -188,6 +188,7 @@ The chatbot needs a [Groq API key](https://console.groq.com/).
 - Answers depend on retrieved context and the LLM; they can be incomplete or inaccurate.
 - The API depends on the Hugging Face Space being awake. On free tiers, the first request after inactivity can be slow.
 
+
 ## 🤝 Contributing
 
 1. Fork the repository
@@ -197,11 +198,8 @@ The chatbot needs a [Groq API key](https://console.groq.com/).
 
 ## 📄 License
 
-This project is licensed under the MIT License. Add a `LICENSE` file to the repository.
+This project is licensed under the [Apache License 2.0](LICENSE). See the `LICENSE` file for details.
 
-## 👤 Author
-
-**alim9hamed**: [GitHub](https://github.com/alim9hamed)
 
 ---
 
