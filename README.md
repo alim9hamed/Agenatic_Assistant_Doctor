@@ -9,6 +9,9 @@ The chatbot runs as a Gradio app on **Hugging Face Spaces**, and this repository
 
 > ⚠️ **Medical disclaimer:** This project is for educational and research purposes only. It does **not** provide medical diagnoses and is not a substitute for a licensed ophthalmologist. For any eye problem, consult a doctor. In an emergency, contact your local emergency services.
 
+
+This project is part of my graduation project, together with the [Eye Disease Classification](https://github.com/alim9hamed/eye-disease-classification-yolov8.git) computer-vision model.
+
 ---
 
 ## 🔗 Links
