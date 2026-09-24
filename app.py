@@ -6,7 +6,7 @@ import os
 app = Flask(__name__)
 CORS(app)
 
-# فقط اكتب اسم المساحة بدون src=
+
 client = Client("https://alim9hamed-medical-chatbot.hf.space")
 
 @app.route('/predict', methods=['POST'])
