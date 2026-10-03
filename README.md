@@ -51,7 +51,7 @@ Each knowledge set lives in its own **project**, so multiple collections of docu
 
 ## Evolution from the original project
 
-This project is the next stage of **[Agenatic Assistant Doctor](https://github.com/alim9hamed/Agenatic_Assistant_Doctor)** (referred to below as **v1**), a bilingual (Arabic / English) eye-disease chatbot. v1 proved the idea: a RAG chatbot over trusted medical websites, running as a Gradio app on Hugging Face Spaces, with a small Flask API on Render that forwards questions to it.
+This project is the next stage of **[Agenatic Assistant Doctor](https://github.com/alim9hamed/Agenatic_Assistant_Doctor/tree/main)** (referred to below as **v1**), a bilingual (Arabic / English) eye-disease chatbot. v1 proved the idea: a RAG chatbot over trusted medical websites, running as a Gradio app on Hugging Face Spaces, with a small Flask API on Render that forwards questions to it.
 
 The goal of this version (**v2**) is to turn that proof of concept into a **production-oriented backend**: a properly layered application, with swappable model providers, persistent storage, and a real ingestion pipeline.
 
@@ -128,6 +128,93 @@ Instead of scraping a fixed set of web pages, documents now enter through an API
 v1 included product behaviors that are specific to its eye-disease chatbot, such as automatic Arabic / English language detection with RTL/LTR formatting and an ophthalmologist persona prompt. Porting the bilingual behavior to the new architecture is on the [Roadmap](#roadmap).
 
 ## Architecture
+
+### Component diagram
+
+How the layers fit together and which component talks to which. Requests flow top to bottom: routes delegate to controllers, controllers use models for persistence and stores for AI providers, and nothing in the upper layers knows which vendor sits at the bottom.
+
+```mermaid
+flowchart TB
+    Client["Client<br/>curl, Swagger UI, frontend"]
+
+    subgraph API["API layer: FastAPI (src/main.py, src/routes)"]
+        R1["Base route<br/>GET /"]
+        R2["Data routes<br/>upload, process"]
+        R3["NLP routes<br/>index push, search, answer"]
+    end
+
+    subgraph CTRL["Controllers (src/controllers)"]
+        C1["Data controllers<br/>file validation, chunking"]
+        C2["NLP controller<br/>indexing, retrieval,<br/>prompt building, answer generation"]
+    end
+
+    subgraph MODELS["Models (src/models)"]
+        M1["Schemas and DB access<br/>projects, assets, chunks"]
+    end
+
+    subgraph STORES["Stores (src/stores): provider layer"]
+        FAC{{"Provider factory<br/>reads .env"}}
+        LLMI["LLMInterface"]
+        EMBI["EmbeddingInterface"]
+        VDB["Vector DB provider"]
+        FAC --> LLMI
+        FAC --> EMBI
+        FAC --> VDB
+    end
+
+    subgraph HELP["Helpers (src/helpers)"]
+        H1["Settings<br/>Pydantic + .env"]
+    end
+
+    subgraph DATA["Persistence"]
+        MONGO[("MongoDB<br/>Docker Compose")]
+        QDRANT[("Qdrant<br/>vector index")]
+    end
+
+    subgraph EXT["Model providers (configurable)"]
+        LLMP["LLM: OpenAI, Groq,<br/>Ollama, Cohere, Hugging Face"]
+        EMBP["Embeddings: Hugging Face<br/>and other providers"]
+    end
+
+    Client --> R1
+    Client --> R2
+    Client --> R3
+    R2 --> C1
+    R3 --> C2
+    C1 --> M1
+    C2 --> M1
+    C2 --> LLMI
+    C2 --> EMBI
+    C2 --> VDB
+    M1 --> MONGO
+    VDB --> QDRANT
+    LLMI --> LLMP
+    EMBI --> EMBP
+    H1 -.-> FAC
+    H1 -.-> M1
+
+    classDef client fill:#f3f4f6,stroke:#6b7280,color:#111827
+    classDef api fill:#dbeafe,stroke:#2563eb,color:#111827
+    classDef ctrl fill:#dcfce7,stroke:#16a34a,color:#111827
+    classDef model fill:#fef9c3,stroke:#ca8a04,color:#111827
+    classDef store fill:#fae8ff,stroke:#a21caf,color:#111827
+    classDef help fill:#e5e7eb,stroke:#4b5563,color:#111827
+    classDef data fill:#ffedd5,stroke:#ea580c,color:#111827
+    classDef ext fill:#fee2e2,stroke:#dc2626,color:#111827
+
+    class Client client
+    class R1,R2,R3 api
+    class C1,C2 ctrl
+    class M1 model
+    class FAC,LLMI,EMBI,VDB store
+    class H1 help
+    class MONGO,QDRANT data
+    class LLMP,EMBP ext
+```
+
+### Data flow
+
+The RAG pipeline from document upload to grounded answer.
 
 ```mermaid
 flowchart LR
@@ -209,7 +296,7 @@ flowchart LR
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/alim9hamed/Agenatic_Assistant_Doctor.git
+git clone -b v2-production-rewrite https://github.com/alim9hamed/Agenatic_Assistant_Doctor.git
 cd Agenatic_Assistant_Doctor
 ```
 
