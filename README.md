@@ -56,7 +56,7 @@ The goal of this version (**v2**) is to turn that proof of concept into a **prod
 
 ### What changed at a glance
 
-| Area | v1: Agenatic Assistant Doctor | v2: Assistant Doctor (this project) |
+| Area | v1: Assistant Doctor | v2: Assistant Doctor (this project) |
 |---|---|---|
 | **Scope** | Eye-disease chatbot with a fixed knowledge base | General document-aware assistant; you supply the documents |
 | **Where the RAG logic lives** | In a Hugging Face Space and a Colab notebook. The repo only holds a thin Flask proxy (`app.py`) | Inside this repository, as a structured application |
