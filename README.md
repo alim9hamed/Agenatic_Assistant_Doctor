@@ -9,7 +9,6 @@ Upload your clinical documents, index them, and ask questions in natural languag
 ![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white)
 ![MongoDB](https://img.shields.io/badge/MongoDB-47A248?logo=mongodb&logoColor=white)
-![Qdrant](https://img.shields.io/badge/Qdrant-DC244C?logo=qdrant&logoColor=white)
 ![LangChain](https://img.shields.io/badge/LangChain-1C3C3C)
 ![Status](https://img.shields.io/badge/Status-Early%20version%20(in%20development)-orange)
 ![License](https://img.shields.io/badge/License-Apache%202.0-blue)
@@ -67,7 +66,7 @@ The goal of this version (**v2**) is to turn that proof of concept into a **prod
 | **Retrieval depth** | Fixed top-2 chunks | Configurable per request (`limit`) |
 | **LLM** | One provider: Groq (`llama-4-scout-17b-16e-instruct`) | Multiple providers through an `LLMInterface` and a factory (OpenAI, Groq, Ollama, Cohere, Hugging Face) |
 | **Embeddings** | One model: `all-MiniLM-L6-v2` | Multiple providers through an `EmbeddingInterface` and a factory |
-| **Vector database** | ChromaDB (local `chroma_db` directory) | Qdrant, selected through configuration |
+| **Vector database** | ChromaDB (local `chroma_db` directory) | Pluggable, selected through configuration (`VECTOR_DB_BACKEND`); Qdrant in the default configuration |
 | **Persistent storage** | Vector store only | MongoDB for projects, files, and chunks, plus the vector database for embeddings |
 | **Multi-tenancy** | Single knowledge base | Project-based isolation: one namespace per project |
 | **Configuration** | Values set in the notebook / Space | Environment-based settings (`.env`) validated with Pydantic |
@@ -91,34 +90,39 @@ In v1 the API, the retrieval logic, and the model calls were not separated insid
 The practical benefit is that a change to one concern (for example swapping the database or the LLM) does not ripple through the rest of the code.
 
 **2. Provider flexibility through interfaces and a factory.**
-v1 was tied to a single LLM provider and a single embedding model. v2 introduces:
+v1 was tied to a single LLM provider, a single embedding model, and a single vector store. v2 introduces:
 
 - an **`LLMInterface`** that defines what any text-generation backend must provide
 - an **`EmbeddingInterface`** that defines what any embedding backend must provide
 - a **provider factory** that reads the configuration and returns the right implementation
+- a **configurable vector database backend**, selected with `VECTOR_DB_BACKEND`, so you are not locked into Qdrant
 
 ```mermaid
 flowchart LR
-    ENV[".env<br/>GENERATION_BACKEND<br/>EMBEDDING_BACKEND"] --> F["Provider factory"]
+    ENV[".env<br/>GENERATION_BACKEND<br/>EMBEDDING_BACKEND<br/>VECTOR_DB_BACKEND"] --> F["Provider factory"]
     F --> LI["LLMInterface"]
     F --> EI["EmbeddingInterface"]
+    F --> VI["Vector DB provider"]
     LI --> L1["OpenAI"]
     LI --> L2["Groq"]
     LI --> L3["Ollama"]
     LI --> L4["Cohere"]
     EI --> E1["Hugging Face"]
     EI --> E2["Other embedding providers"]
+    VI --> V1["Qdrant"]
+    VI --> V2["Other vector databases"]
     C["Controllers"] --> LI
     C --> EI
+    C --> VI
 ```
 
-Controllers only ever talk to the interfaces, never to a specific vendor. Switching provider is a configuration change, and adding a new one means implementing the interface and registering it in the factory, with no changes to the controllers or routes. Generation and embeddings are configured independently, so you can, for example, generate with Groq while embedding with a Hugging Face model, or run both locally with Ollama.
+Controllers only ever talk to the interfaces, never to a specific vendor. Switching provider is a configuration change, and adding a new one means implementing the interface and registering it in the factory, with no changes to the controllers or routes. Generation, embeddings, and the vector database are configured independently, so you can, for example, generate with Groq, embed with a Hugging Face model, and store vectors in the database of your choice, or run generation and embeddings locally with Ollama.
 
 **3. Persistence in two layers.**
 v1 kept only a vector store. v2 stores everything that matters:
 
 - **MongoDB** holds projects, uploaded file records, and the text chunks. Chunks are saved as the source of truth, so the vector index can be rebuilt from MongoDB without re-uploading or re-processing files.
-- **The vector database** (Qdrant) holds chunk embeddings for similarity search.
+- **The vector database** holds chunk embeddings for similarity search. It is a pluggable backend chosen in configuration; the default configuration uses Qdrant.
 
 **4. A real ingestion pipeline.**
 Instead of scraping a fixed set of web pages, documents now enter through an API: upload, validate (type and size), chunk (with configurable size and overlap), store, then index. This is what makes the system usable for any team's own protocols and documents, not only one medical topic.
@@ -156,7 +160,7 @@ flowchart TB
         FAC{{"Provider factory<br/>reads .env"}}
         LLMI["LLMInterface"]
         EMBI["EmbeddingInterface"]
-        VDB["Vector DB provider"]
+        VDB["Vector DB provider<br/>selected by VECTOR_DB_BACKEND"]
         FAC --> LLMI
         FAC --> EMBI
         FAC --> VDB
@@ -168,7 +172,7 @@ flowchart TB
 
     subgraph DATA["Persistence"]
         MONGO[("MongoDB<br/>Docker Compose")]
-        QDRANT[("Qdrant<br/>vector index")]
+        VECDB[("Vector database<br/>Qdrant in default config,<br/>swappable")]
     end
 
     subgraph EXT["Model providers (configurable)"]
@@ -187,7 +191,7 @@ flowchart TB
     C2 --> EMBI
     C2 --> VDB
     M1 --> MONGO
-    VDB --> QDRANT
+    VDB --> VECDB
     LLMI --> LLMP
     EMBI --> EMBP
     H1 -.-> FAC
@@ -208,7 +212,7 @@ flowchart TB
     class M1 model
     class FAC,LLMI,EMBI,VDB store
     class H1 help
-    class MONGO,QDRANT data
+    class MONGO,VECDB data
     class LLMP,EMBP ext
 ```
 
@@ -222,7 +226,7 @@ flowchart LR
     B --> C[Process & chunk]
     C --> D[(MongoDB<br/>chunks)]
     D --> E[Embed chunks]
-    E --> F[(Qdrant<br/>vector index)]
+    E --> F[(Vector DB<br/>index)]
     G[User question] --> H[Embed query]
     H --> I[Similarity search]
     F --> I
@@ -256,7 +260,7 @@ flowchart LR
 | Language | Python 3.10+ |
 | API framework | FastAPI |
 | Database | MongoDB |
-| Vector database | Qdrant |
+| Vector database | Pluggable backend (Qdrant in the default configuration) |
 | Orchestration | LangChain |
 | LLM / embedding providers | OpenAI, Groq, Ollama, Cohere, Hugging Face |
 | Configuration | Pydantic Settings (`.env`) |
@@ -291,12 +295,12 @@ flowchart LR
 - Python **3.10** or newer
 - A running **MongoDB** instance (local or via Docker, see below)
 - An API key for your chosen generation / embedding backend (e.g. Groq, OpenAI, Hugging Face), unless you run models locally with Ollama
-- A vector database backend (Qdrant, configured in `.env`)
+- A vector database backend, configured in `.env` (the default configuration uses Qdrant)
 
 ### 1. Clone the repository
 
 ```bash
-git clone -b v2-production-rewrite https://github.com/alim9hamed/Agenatic_Assistant_Doctor.git
+git clone -b production-v2 https://github.com/alim9hamed/Agenatic_Assistant_Doctor.git
 cd Agenatic_Assistant_Doctor
 ```
 
@@ -414,8 +418,8 @@ VECTOR_DB_DISTANCE_METHOD="cosine"
 | `GENERATION_MODEL_ID` | Model used for answer generation |
 | `EMBEDDING_MODEL_ID` | Model used for embeddings |
 | `EMBEDDING_MODEL_SIZE` | Embedding vector dimension (must match the embedding model) |
-| `VECTOR_DB_BACKEND` | Vector database backend |
-| `VECTOR_DB_PATH` | Local storage path for the vector database |
+| `VECTOR_DB_BACKEND` | Vector database provider to use. `QDRANT` is used in the example above; other supported backends can be selected here without code changes |
+| `VECTOR_DB_PATH` | Local storage path for the vector database (used by local backends) |
 | `VECTOR_DB_DISTANCE_METHOD` | Similarity metric (e.g. `cosine`) |
 
 > **Note:** `EMBEDDING_MODEL_SIZE` must match the output dimension of your chosen embedding model, otherwise indexing will fail. If you change the embedding model, re-index your project with `do_reset` set to `1`.
