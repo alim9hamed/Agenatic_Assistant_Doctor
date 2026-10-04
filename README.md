@@ -9,31 +9,31 @@ The chatbot runs as a Gradio app on **Hugging Face Spaces**, and this repository
 
 > **Version note:** This branch (`main`) contains **v1**, the original proof of concept. A production-oriented rewrite with a layered (MVC-style) architecture, pluggable LLM / embedding / vector database providers, and MongoDB persistence is available on the [`production-v2`](https://github.com/alim9hamed/Agenatic_Assistant_Doctor/tree/production-v2) branch. See [What changed in v2](#what-changed-in-v2).
 
-> ⚠️ **Medical disclaimer:** This project is for educational and research purposes only. It does **not** provide medical diagnoses and is not a substitute for a licensed ophthalmologist. For any eye problem, consult a doctor. In an emergency, contact your local emergency services.
+>  **Medical disclaimer:** This project is for educational and research purposes only. It does **not** provide medical diagnoses and is not a substitute for a licensed ophthalmologist. For any eye problem, consult a doctor. In an emergency, contact your local emergency services.
 
 This project is part of my graduation project, together with the [Eye Disease Classification](https://github.com/alim9hamed/eye-disease-classification-yolov8.git) computer-vision model.
 
 ---
 
-## 🔗 Links
+##  Links
 
 | Resource | Link |
 | --- | --- |
-| 🤗 Chatbot (Hugging Face Space) | <https://huggingface.co/spaces/alim9hamed/medical_chatbot> |
-| 📓 Full notebook (Google Colab) | [Open in Colab](https://colab.research.google.com/drive/1Y99MMJbsPhRcUXsKsKPjx0cIygz37ZAN?usp=sharing) |
-| 🌐 Live API (Render) | `https://<your-render-service>.onrender.com` |
-| 🚀 v2 (production-oriented rewrite) | [`production-v2` branch](https://github.com/alim9hamed/Agenatic_Assistant_Doctor/tree/production-v2) |
+|  Chatbot (Hugging Face Space) | <https://huggingface.co/spaces/alim9hamed/medical_chatbot> |
+|  Full notebook (Google Colab) | [Open in Colab](https://colab.research.google.com/drive/1Y99MMJbsPhRcUXsKsKPjx0cIygz37ZAN?usp=sharing) |
+|  Live API (Render) | `https://<your-render-service>.onrender.com` |
+|  v2 (production-oriented rewrite) | [`production-v2` branch](https://github.com/alim9hamed/Agenatic_Assistant_Doctor/tree/production-v2) |
 
-## ✨ Features
+##  Features
 
-- 🌍 **Automatic language detection**: replies in Arabic or English, matching the user's question (with RTL/LTR formatting).
-- 📚 **Custom medical knowledge base** built from trusted sources: WebMD, Mayo Clinic, MedlinePlus, Healthline, and CDC.
-- 🔎 **Semantic search** with ChromaDB and Hugging Face embeddings.
-- 💬 **Chat history** included in the prompt for context-aware answers.
-- 🩺 **Ophthalmologist persona** prompt: concise, medically grounded answers, with a clear fallback when no answer is available.
-- 🔌 **Ready-to-use REST API** with CORS enabled, so web and mobile apps can call it directly.
+-  **Automatic language detection**: replies in Arabic or English, matching the user's question (with RTL/LTR formatting).
+-  **Custom medical knowledge base** built from trusted sources: WebMD, Mayo Clinic, MedlinePlus, Healthline, and CDC.
+-  **Semantic search** with ChromaDB and Hugging Face embeddings.
+-  **Chat history** included in the prompt for context-aware answers.
+-  **Ophthalmologist persona** prompt: concise, medically grounded answers, with a clear fallback when no answer is available.
+-  **Ready-to-use REST API** with CORS enabled, so web and mobile apps can call it directly.
 
-## 🏗️ Architecture
+##  Architecture
 
 ```
 ┌────────────┐   POST /predict   ┌─────────────────────┐   gradio_client   ┌──────────────────────────┐
@@ -60,7 +60,7 @@ User question ──► Language detection ────────────�
 
 This is a classic, fixed-pipeline RAG: every question follows the same steps (retrieve once, then generate). The model does not decide whether to search, rewrite the question, or choose between tools.
 
-## 🧰 Tech Stack
+##  Tech Stack
 
 | Component | Technology |
 | --- | --- |
@@ -74,7 +74,7 @@ This is a classic, fixed-pipeline RAG: every question follows the same steps (re
 | API layer | Flask, Flask-CORS, `gradio_client` |
 | Deployment | Render (API) + Hugging Face Spaces (chatbot) |
 
-## 📁 Repository Structure
+##  Repository Structure
 
 ```
 Agenatic_Assistant_Doctor/
@@ -87,7 +87,7 @@ Agenatic_Assistant_Doctor/
 
 > The full chatbot code (RAG pipeline, Gradio UI) lives in the Hugging Face Space and the Colab notebook.
 
-## 📡 API Reference
+##  API Reference
 
 ### `POST /predict`
 
@@ -144,7 +144,7 @@ const data = await res.json();
 console.log(data.response);
 ```
 
-## 🚀 Getting Started
+##  Getting Started
 
 ### Run the API locally
 
@@ -178,7 +178,7 @@ The chatbot needs a [Groq API key](https://console.groq.com/).
 
 > Never commit API keys or tokens to the repository.
 
-## ⚙️ Chatbot Configuration
+##  Chatbot Configuration
 
 | Setting | Default |
 | --- | --- |
@@ -189,7 +189,7 @@ The chatbot needs a [Groq API key](https://console.groq.com/).
 | Vector DB directory | `chroma_db` |
 | Knowledge sources | WebMD, Mayo Clinic, MedlinePlus, Healthline, CDC |
 
-## ⚠️ Limitations
+##  Limitations
 
 - The knowledge base is built from the **landing pages** of the listed websites, so coverage of specific eye diseases can be limited. Adding direct links to eye-disease pages will improve answers.
 - Answers depend on retrieved context and the LLM; they can be incomplete or inaccurate.
@@ -215,17 +215,17 @@ The [`production-v2`](https://github.com/alim9hamed/Agenatic_Assistant_Doctor/tr
 
 v2 is an early version and is still under active development. See its README for the full comparison, architecture diagrams, and setup instructions.
 
-## 🤝 Contributing
+##  Contributing
 
 1. Fork the repository
 2. Create a branch: `git checkout -b feature/your-feature`
 3. Commit: `git commit -m "Add your feature"`
 4. Push and open a Pull Request
 
-## 📄 License
+##  License
 
 This project is licensed under the [Apache License 2.0](https://github.com/alim9hamed/Agenatic_Assistant_Doctor/blob/main/LICENSE). See the `LICENSE` file for details.
 
 ---
 
-⭐ If you find this project useful, please give it a star!
+ If you find this project useful, please give it a star!
