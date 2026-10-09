@@ -9,6 +9,7 @@ Upload your clinical documents, index them, and ask questions in natural languag
 ![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white)
 ![MongoDB](https://img.shields.io/badge/MongoDB-47A248?logo=mongodb&logoColor=white)
+![Qdrant](https://img.shields.io/badge/Qdrant-DC244C?logo=qdrant&logoColor=white)
 ![LangChain](https://img.shields.io/badge/LangChain-1C3C3C)
 ![Status](https://img.shields.io/badge/Status-Early%20version%20(in%20development)-orange)
 ![License](https://img.shields.io/badge/License-Apache%202.0-blue)
